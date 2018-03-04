@@ -46,10 +46,12 @@ public class SimpleCircuitBreaker implements CircuitBreaker {
 				Thread.sleep(tryDuration);
 				System.out.println("threadId = " + threadId);
 				Event event = events.get(threadId);
-				if (event.getStatus().equals("OK")) {
-					events.remove(threadId);
-				} else {
-					event.setStatus("KO");
+				if (event != null) {
+					if (event.getStatus().equals("OK")) {
+						events.remove(threadId);
+					} else {
+						event.setStatus("KO");
+					}
 				}
 			} catch (InterruptedException e) {
 				e.printStackTrace();
@@ -71,7 +73,7 @@ public class SimpleCircuitBreaker implements CircuitBreaker {
 		System.out.println("e.getClass().getName() = " + e.getClass().getName());
 		System.out.println("catched.getClass().getName() = " + catched.getClass().getName());
 
-		if (e.getClass().getName().equals(catched.getClass().getName())) {
+		if (e.getClass().getName().equals(catched)) {
 			Long threadId = Thread.currentThread().getId();
 			Event event = events.get(threadId);
 			event.setStatus("KO");

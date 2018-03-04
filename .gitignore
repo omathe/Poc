@@ -1,0 +1,13 @@
+/bin/
+/build/
+.classpath
+.project
+cache.properties*
+.settings
+*.bin
+TODO.txt
+Oss.xml
+Lns.xml
+*vpp~*
+*.lock
+/.gradle/
