@@ -46,8 +46,10 @@ public class SimpleCircuitBreaker implements CircuitBreaker {
 
 		new Thread(() -> {
 			try {
+				if (threadId.equals(14L)) {
+					System.out.println("threadId = " + threadId);
+				}
 				Thread.sleep(tryDuration);
-//				System.out.println("threadId = " + threadId);
 				Event event = events.get(threadId);
 				if (event != null) {
 					if (event.getStatus().equals("OK")) {
@@ -68,6 +70,10 @@ public class SimpleCircuitBreaker implements CircuitBreaker {
 	public void end() throws MicroServiceUnavailableException {
 
 		Long threadId = Thread.currentThread().getId();
+
+		if (threadId.equals(14L)) {
+			System.out.println("threadId = " + threadId);
+		}
 		Event event = events.get(threadId);
 		if (event != null) {
 			event.setStatus("OK");
@@ -96,13 +102,13 @@ public class SimpleCircuitBreaker implements CircuitBreaker {
 
 		boolean maxFailedReached = false;
 		if (!open) {
-			maxFailedReached = partionedEvents.get(Boolean.TRUE).size() >= maxFailed;
+			maxFailedReached = partionedEvents.get(Boolean.FALSE).size() >= maxFailed;
 			if (maxFailedReached) {
 				openDate.set(Instant.now().toEpochMilli());
 			}
 		}
 		// remove expired events
-		events.values().removeAll(partionedEvents.get(Boolean.FALSE));
+		events.values().removeAll(partionedEvents.get(Boolean.TRUE));
 		if (open || maxFailedReached) {
 			System.err.println("open = " + open + ", maxFailedReached = " + maxFailedReached);
 			throw new MicroServiceUnavailableException("Service is open !");
