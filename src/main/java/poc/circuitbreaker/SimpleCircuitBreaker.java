@@ -7,12 +7,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+
 /**
  *
  * @author olivier
  *
  */
 public class SimpleCircuitBreaker implements CircuitBreaker {
+
+//	private final Log logger = LogFactory.getLog(getClass());
 
 	private ConcurrentHashMap<Long, Event> events;
 	private AtomicLong openDate;
@@ -38,23 +41,25 @@ public class SimpleCircuitBreaker implements CircuitBreaker {
 		check();
 
 		Long threadId = Thread.currentThread().getId();
-		System.out.println("threadId = " + threadId);
+//		System.out.println("threadId = " + threadId);
 		events.putIfAbsent(threadId, new Event(Instant.now().toEpochMilli()));
 
 		new Thread(() -> {
 			try {
 				Thread.sleep(tryDuration);
-				System.out.println("threadId = " + threadId);
+//				System.out.println("threadId = " + threadId);
 				Event event = events.get(threadId);
 				if (event != null) {
 					if (event.getStatus().equals("OK")) {
 						events.remove(threadId);
 					} else {
 						event.setStatus("KO");
+						safePrintln("timeout");
+						//System.err.println("timeout");
 					}
 				}
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				System.err.println(e);
 			}
 		}).start();
 	}
@@ -64,14 +69,13 @@ public class SimpleCircuitBreaker implements CircuitBreaker {
 
 		Long threadId = Thread.currentThread().getId();
 		Event event = events.get(threadId);
-		event.setStatus("OK");
+		if (event != null) {
+			event.setStatus("OK");
+		}
 	}
 
 	@Override
 	public void analyseException(Exception e) throws Exception {
-
-		System.out.println("e.getClass().getName() = " + e.getClass().getName());
-		System.out.println("catched.getClass().getName() = " + catched.getClass().getName());
 
 		if (e.getClass().getName().equals(catched)) {
 			Long threadId = Thread.currentThread().getId();
@@ -87,7 +91,8 @@ public class SimpleCircuitBreaker implements CircuitBreaker {
 
 		boolean open = openDate.get() != 0 && (Instant.now().toEpochMilli() - openDate.get() <= openDuration);
 
-		Map<Boolean, List<Event>> partionedEvents = events.values().stream().collect(Collectors.partitioningBy(event -> Instant.now().toEpochMilli() - event.getStartDate() < tryDuration));
+		Map<Boolean, List<Event>> partionedEvents = events.values().stream()
+				.collect(Collectors.partitioningBy(event -> Instant.now().toEpochMilli() - event.getStartDate() > tryDuration));
 
 		boolean maxFailedReached = false;
 		if (!open) {
@@ -99,6 +104,7 @@ public class SimpleCircuitBreaker implements CircuitBreaker {
 		// remove expired events
 		events.values().removeAll(partionedEvents.get(Boolean.FALSE));
 		if (open || maxFailedReached) {
+			System.err.println("open = " + open + ", maxFailedReached = " + maxFailedReached);
 			throw new MicroServiceUnavailableException("Service is open !");
 		}
 	}
@@ -126,5 +132,11 @@ public class SimpleCircuitBreaker implements CircuitBreaker {
 		// dates.removeAll(expiredDates);
 
 	}
+
+	public void safePrintln(String s) {
+		  synchronized (System.out) {
+		    System.out.println(s);
+		  }
+		}
 
 }
