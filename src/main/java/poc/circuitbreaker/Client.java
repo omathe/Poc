@@ -10,26 +10,26 @@ public class Client {
 
 		CircuitBreaker circuitBreaker = new SimpleCircuitBreaker();
 
-		for (int i = 0; i < 2; i++) {
+		for (int i = 0; i < 100; i++) {
+			try {
+				Thread.sleep(new Random().nextInt(3000));
+			} catch (InterruptedException e1) {
+			}
 
 			new Thread(() -> {
-				Random rand = new Random();
-				int sleep = rand.nextInt(3000);
-
 				try {
-					Thread.sleep(sleep);
-				} catch (InterruptedException e1) {
-				}
-
-				try {
-					service.execute("10", circuitBreaker);
+					Random rand = new Random();
+					String number = "10";
+					if (rand.nextInt(3) % 2 == 0) {
+						number += "a";
+					}
+//					System.out.println("try to execute " + number + ", thread " + Thread.currentThread().getId());
+					service.execute(number, circuitBreaker);
 				} catch (Exception e) {
-					System.err.println(e);
+//					System.err.println(e);
 				}
 
 			}).start();
 		}
-
 	}
-
 }

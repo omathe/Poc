@@ -2,30 +2,21 @@ package poc.circuitbreaker;
 
 public class Event {
 
-	private Long startDate;
-	private Long endDate;
+	private enum Status {
+		OK, KO;
+	}
+
+	private Long date;
 	private String status;
+	private String deliveryStatus;
 
 	public Event(Long startDate) {
 		super();
-		this.status = "PENDING";
-		this.startDate = startDate;
+		this.date = startDate;
 	}
 
-	public Long getStartDate() {
-		return startDate;
-	}
-
-	public void setStartDate(Long startDate) {
-		this.startDate = startDate;
-	}
-
-	public Long getEndDate() {
-		return endDate;
-	}
-
-	public void setEndDate(Long endDate) {
-		this.endDate = endDate;
+	public Long getDate() {
+		return date;
 	}
 
 	public String getStatus() {
@@ -36,9 +27,18 @@ public class Event {
 		this.status = status;
 	}
 
+
+	public String getDeliveryStatus() {
+		return deliveryStatus;
+	}
+
+	public void setDeliveryStatus(String deliveryStatus) {
+		this.deliveryStatus = deliveryStatus;
+	}
+
 	@Override
 	public String toString() {
-		return "Event [startDate=" + startDate + ", endDate=" + endDate + ", status=" + status + "]";
+		return "Event [date=" + date + ", status=" + status + "]";
 	}
 
 }
