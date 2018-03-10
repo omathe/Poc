@@ -7,11 +7,11 @@ public class SimpleService implements Service {
 	private CircuitBreaker cb;
 
 	public SimpleService() {
-		cb = new SimpleCircuitBreaker();
+		cb = new CircuitBreaker("LNS");
 	}
 
 	@Override
-	public void execute(String number, CircuitBreaker cb) throws Exception {
+	public void execute(String number) throws Exception {
 
 		cb.begin();
 
@@ -21,7 +21,7 @@ public class SimpleService implements Service {
 			System.out.println("thread " + Thread.currentThread().getId() + " : NUMBER " + number);
 			System.out.println("thread " + Thread.currentThread().getId() + " : DURATION " + duration);
 
-			Thread.sleep(duration);
+			Thread.sleep(500);
 
 			Integer integer = Integer.valueOf(number);
 

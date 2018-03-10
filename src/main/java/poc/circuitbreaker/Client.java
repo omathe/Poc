@@ -8,11 +8,9 @@ public class Client {
 
 		Service service = new SimpleService();
 
-		CircuitBreaker circuitBreaker = new SimpleCircuitBreaker();
-
 		for (int i = 0; i < 100; i++) {
 			try {
-				Thread.sleep(new Random().nextInt(2000));
+				Thread.sleep(new Random().nextInt(500));
 			} catch (InterruptedException e1) {
 			}
 
@@ -23,7 +21,7 @@ public class Client {
 					if (rand.nextInt(3) % 2 == 0) {
 						number += "a";
 					}
-					service.execute(number, circuitBreaker);
+					service.execute(number);
 				} catch (Exception e) {
 					System.err.println(e);
 				}
