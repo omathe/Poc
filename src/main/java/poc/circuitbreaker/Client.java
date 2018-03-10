@@ -12,7 +12,7 @@ public class Client {
 
 		for (int i = 0; i < 100; i++) {
 			try {
-				Thread.sleep(new Random().nextInt(3000));
+				Thread.sleep(new Random().nextInt(2000));
 			} catch (InterruptedException e1) {
 			}
 
@@ -23,10 +23,9 @@ public class Client {
 					if (rand.nextInt(3) % 2 == 0) {
 						number += "a";
 					}
-//					System.out.println("try to execute " + number + ", thread " + Thread.currentThread().getId());
 					service.execute(number, circuitBreaker);
 				} catch (Exception e) {
-//					System.err.println(e);
+					System.err.println(e);
 				}
 
 			}).start();

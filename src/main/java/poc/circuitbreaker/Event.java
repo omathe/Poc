@@ -10,13 +10,17 @@ public class Event {
 	private String status;
 	private String deliveryStatus;
 
-	public Event(Long startDate) {
+	public Event(Long date) {
 		super();
-		this.date = startDate;
+		this.date = date;
 	}
 
 	public Long getDate() {
 		return date;
+	}
+
+	public void setDate(Long date) {
+		this.date = date;
 	}
 
 	public String getStatus() {

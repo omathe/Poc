@@ -18,7 +18,8 @@ public class SimpleService implements Service {
 		try {
 			Random rand = new Random();
 			int duration = rand.nextInt(4000);
-			System.err.println("thread " + Thread.currentThread().getId() + " : duration = " + duration);
+			System.out.println("thread " + Thread.currentThread().getId() + " : NUMBER " + number);
+			System.out.println("thread " + Thread.currentThread().getId() + " : DURATION " + duration);
 
 			Thread.sleep(duration);
 
@@ -26,12 +27,14 @@ public class SimpleService implements Service {
 
 			cb.end();
 		} catch (Exception e) {
-			int i = new Random().nextInt(4000);
+			cb.analyseException(e);
+
+			/*int i = new Random().nextInt(4000);
 			if (i % 2 == 0) {
 				cb.analyseException(new IllegalStateException("number must be odd"));
 			} else {
 				cb.analyseException(e);
-			}
+			}*/
 		}
 	}
 
