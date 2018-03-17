@@ -15,7 +15,7 @@ public class LnsMicroService implements MicroService {
 	@Override
 	public boolean isConfigured() {
 
-		return !getBaseUrl().isEmpty();
+		return getBaseUrl() != null && !getBaseUrl().isEmpty();
 	}
 
 }

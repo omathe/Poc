@@ -80,6 +80,14 @@ public class Parameter {
 		return location.equals(Location.PATH.name());
 	}
 
+	boolean isHeaderParameter() {
+		return location.equals(Location.HEADER.name());
+	}
+
+	boolean isQueryParameter() {
+		return location.equals(Location.QUERY.name());
+	}
+
 	@Override
 	public String toString() {
 		return "Parameter [type=" + type + ", location=" + location + ", name=" + name + ", value=" + value + "]";
