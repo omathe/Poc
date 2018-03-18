@@ -88,6 +88,10 @@ public class Parameter {
 		return location.equals(Location.QUERY.name());
 	}
 
+	boolean isBodyParameter() {
+		return location.equals(Location.BODY.name());
+	}
+
 	@Override
 	public String toString() {
 		return "Parameter [type=" + type + ", location=" + location + ", name=" + name + ", value=" + value + "]";
