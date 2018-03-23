@@ -52,14 +52,17 @@ public class CircuitBreaker {
 	 */
 	private String catched;
 
+	private CircuitBreakerStatus circuitBreakerStatus;
+
 	public CircuitBreaker(String name) {
 		this.name = name;
 		responses = new ConcurrentHashMap<Long, Response>();
 		openDate = new AtomicLong();
 		catched = NumberFormatException.class.getName();
+		circuitBreakerStatus = new CircuitBreakerStatus();
 	}
 
-	public void begin() throws MicroServiceUnavailableException {
+	public CircuitBreakerStatus begin() {
 
 		check();
 
@@ -80,9 +83,10 @@ public class CircuitBreaker {
 			} catch (InterruptedException e) {
 			}
 		}).start();
+		return circuitBreakerStatus;
 	}
 
-	public void end() throws MicroServiceUnavailableException {
+	public void end() {
 
 		Long threadId = Thread.currentThread().getId();
 		System.out.println("thread " + threadId + " : END");
@@ -95,7 +99,7 @@ public class CircuitBreaker {
 		}
 	}
 
-	public void analyseException(Exception e) throws Exception {
+	public CircuitBreakerStatus analyseException(Exception e) {
 
 		Long threadId = Thread.currentThread().getId();
 		Response response = responses.get(threadId);
@@ -107,39 +111,39 @@ public class CircuitBreaker {
 				response.setDate(Instant.now().toEpochMilli());
 				System.err.println("thread " + threadId + " : CATCHED EXCEPTION " + e.getClass().getSimpleName());
 				check();
-			} else {
-				System.err.println("thread " + threadId + " : THREW EXCEPTION " + e.getClass().getSimpleName());
-				throw e;
 			}
 		}
+		return circuitBreakerStatus;
 	}
 
-	private void check() throws MicroServiceUnavailableException {
+	private CircuitBreakerStatus check() {
 
 		boolean open = openDate.get() != 0 && (Instant.now().toEpochMilli() - openDate.get() <= openDuration);
 
+		circuitBreakerStatus.setOpen(false);
 		if (open) {
 			System.err.println("open = " + open);
-			throw new MicroServiceUnavailableException("Service " + name + " is open !");
+			circuitBreakerStatus.setOpen(true);
 		} else {
 			Map<Boolean, List<Response>> partionedResponses = responses.values().stream()
-					.collect(Collectors.partitioningBy(response -> Instant.now().toEpochMilli() - response.getDate() > failedPeriod));
+					.collect(Collectors.partitioningBy(response -> response.hasFailed() || response.isLate()));
 
-			long failedCount = partionedResponses.get(Boolean.FALSE).stream()
-					.filter(response -> response.hasFailed() || response.isLate()).count();
+			long failedCount = partionedResponses.get(Boolean.TRUE).stream().count();
 
 			// remove expired responses
 			new Thread(() -> {
-				responses.values().removeAll(partionedResponses.get(Boolean.TRUE));
+				responses.values().removeAll(partionedResponses.get(Boolean.FALSE));
 			}).start();
 
 			if (failedCount >= maxFailed) {
 
 				openDate.set(Instant.now().toEpochMilli());
 				System.err.println("maxFailedReached (" + failedCount + ")");
-				throw new MicroServiceUnavailableException("Service " + name + " is open !");
+				circuitBreakerStatus.setOpen(true);
+				responses.clear();
 			}
 		}
+		return circuitBreakerStatus;
 	}
 
 }
